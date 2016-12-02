@@ -41,14 +41,6 @@ def build(args, row, tests, testtype, really):
             result.append(prepare(test, args, row))
     return result
 
-# def execute(args, row, tests, testtype, really):
-#     if really and testtype in tests:
-#         for test in tests[testtype]:
-#             test = prepare(test, args, row)
-#             print_info_spaces(" -------------------------- Executing: %s -------------------------- "%(test))
-#             if not args.debug:
-#                 subprocess.Popen("%s"%test, shell=True).wait()
-#             print_info_spaces(" -------------------------- Done: %s -------------------------- "%(test))
 
 def runtests(args, tests):
     total = 0
@@ -73,22 +65,6 @@ def runtests(args, tests):
             output.close()
 
 
-# def run(args,db):
-#     stream = open(args.configuration,'r')
-#     content = ruamel.yaml.load(stream)
-#     stream.close()
-#     if args.validate or args.brute:
-#         for type in content.iterkeys():
-#             print_status("Checkinging %s services"%(type))
-#             with db:
-#                 db.row_factory = dict_factory
-#                 cur = db.cursor()  
-#                 cur.execute("select distinct ip,port from ipports where %s"%content[type]['where']) 
-#                 for row in cur.fetchall():
-#                     print_info("Testing: %s:%d"%(row['ip'],row['port']))
-#                     execute(args, row, content[type], 'validations', args.validate)
-#                     execute(args, row, content[type], 'bruteforce', args.brute)
-#                 cur.close()
 
 def buildtests(args, db):
     result = dict()
@@ -111,9 +87,8 @@ def buildtests(args, db):
 
 
 def do(args):
-    print_status("Please give a customer reference: ")
+    print_status("Please give a customer reference: ",end="")
     args.saveDir = input()
-    
     # Create SQLite DB to hold IP/port/protocol/state
     db = lite.connect(args.dbname)
     with db:
@@ -146,7 +121,10 @@ def do(args):
             pass
         cur.close()
     
-    input("We're taking a break, do you want to continue? [y/n]'")
+    cont = input("We're taking a break, do you want to continue? [y/n]") or 'y'
+    if cont.lower() != 'y':
+        print 'And .... we\'re out of here'
+        exit(1)
     
     tests = buildtests(args, db)
     total = 0
@@ -159,6 +137,15 @@ def do(args):
         os.makedirs(args.saveDir)
 
     runtests(args,tests)
-    # run(args,db)
+
+    # change ownership of saveDir to actual user
+    os.chown(args.saveDir,args.userid,args.userid)
+    for root,dirs,files in os.walk(args.saveDir):
+        for d in dirs:
+            os.chown(d,args.userid,args.userid)
+        for f in files:
+            fname = os.path.join(root,f)
+            os.chown(fname,args.userid,args.userid)
+    
 
     

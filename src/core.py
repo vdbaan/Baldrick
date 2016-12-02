@@ -1,8 +1,9 @@
 ####################################################################################
 # Core functions and settings
 ####################################################################################
-
+from __future__ import print_function
 import os
+import pwd
 import sys
 import random
 import time
@@ -74,9 +75,9 @@ class bcolors:
     backWhite = '\033[47m'
 
 # main status calls for print functions
-def print_status(message):
+def print_status(message,end='\n'):
     print((bcolors.GREEN) + (bcolors.BOLD) + \
-        ("[*] ") + (bcolors.ENDC) + (str(message)))
+        ("[*] ") + (bcolors.ENDC) + (str(message)),end=end)
 
 
 def print_info(message):
@@ -114,7 +115,35 @@ def read_input(message):
          (bcolors.ENDC))
     return input()
 
-def checkRoot():
+def checkRoot(args):
+    sudo = 0
+    if os.getuid() == 0:
+        # our user ID is root, so we may have been invoked via sudo
+        if 'SUDO_USER' in os.environ:
+            username = os.environ['SUDO_USER']
+            sudo = 1
+        elif 'USER' in os.environ:
+            username = os.environ['USER']
+        else:
+            username = "root"
+    else:
+        if 'USER' in os.environ:
+            username = os.environ['USER']
+        else:
+            username = pwd.getpwuid(os.getuid()).pw_name
+    #Try to get uid and gid from the user name, which may not exist
+    try:
+        pwd.getpwnam(username)
+    except KeyError:
+        username = 'root'
+
+    userid = pwd.getpwnam(username).pw_uid
+    groupid = pwd.getpwnam(username).pw_gid
+
+    args.groupid=groupid
+    args.user=username
+    args.userid=userid
+    args.sudo=sudo
     if os.geteuid() != 0:
         # print_error("this needs to be run as root. Please sudo it up! Exiting...")
         raise Exception("this needs to be run as root. Please sudo it up! Exiting...")

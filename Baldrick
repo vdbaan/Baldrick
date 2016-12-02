@@ -23,10 +23,10 @@ def main(args):
         print_status("Trying to update myself first ...")
         subprocess.Popen("git pull", shell=True).wait()
 
-        checkRoot()
+        checkRoot(args)
 
         # pull in runner and run
-        import src.runner 
+        import src.runner
         src.runner.do(args)
 
     except KeyboardInterrupt:
@@ -41,10 +41,9 @@ def main(args):
         # print traceback.format_exc()
     finally:
         if os.path.isfile(dbname):
-            os.remove(dbname)    
+            os.remove(dbname)
         print_status("I'm finished sir, is there anything else I could do?")
         print
-        # pass  
 
 
 if __name__ == "__main__":
