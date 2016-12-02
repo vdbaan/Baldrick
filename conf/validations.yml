@@ -1,0 +1,180 @@
+DNS:
+  where: service like 'dns'
+  validations:
+  - nmap -Pn -n -script dns-cache-snoop -sUV -p%PORT %IP
+FINGER:
+  where: port = 79
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+FTP:
+  where: service like 'ftp%'
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - nmap  -d -Pn -n --script=ftp-anon -sSV -p21 %IP
+  - msfconsole -q -x "use auxiliary/scanner/ftp/ftp_version;set RHOSTS %IP; run; quit"
+  bruteforce:
+  # - hydra -v -f -L %USERLIST -P %PASSLIST -t 10 ftp://%IP:%PORT
+  - medusa -M ftp -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+HTTP:
+  where: service like 'http%'
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - nmap -Pn -n --script=http-vuln*.nse -sV -p%PORT %IP
+  - phantomjs conf/screenshot.js "http://%IP:%PORT/" %SAVEDIR/screenshot-%IP.%PORT.png
+  bruteforce:
+  - nikto -host %IP -port %PORT
+HTTPS:
+  where: service like 'https%'
+  validations:
+  - testssl --warnings false --wide %IP:%PORT
+  - phantomjs conf/screenshot.js --ignore-ssl-errors=true "https://%IP:%PORT/" %SAVEDIR/screenshot-ssl-%IP.%PORT.png
+  bruteforce:
+  - nikto -ssl -host %IP -port %PORT
+IKE:
+  where: service like 'ike%'
+  validations:
+  - ike-scan -M %IP
+LDAP:
+  where: port = 389
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  bruteforce:
+  - hydra -v -L %USERLIST -P %PASSLIST -t 5 ldap2://%IP:%PORT
+  - hydra -v -L %USERLIST -P %PASSLIST -t 10 ldap3://%IP:%PORT
+LLMNR:
+  where: service like 'llmnr'
+  validations:
+  - sudo nmap -sUV -pU:%PORT -Pn -n --script=llmnr-resolve %IP
+MSRPC:
+  where: port = 135
+  validations:
+  - nmap --disable-arp-ping -n -Pn -p135 -sVS --script=msrpc-enum %IP
+MSSQL:
+  where: port = 1433
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - nmap -Pn -n -p1433 --script ms-sql-info -sV %IP
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 4 %IP:%PORT mssql
+  - medusa -M mssql -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+MYSQL:
+  where: port = 3306
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - msfconsole -q -x "use auxiliary/scanner/mysql/mysql_version; setg RHOSTS %IP; setg USERNAME root; run; use auxiliary/scanner/mysql/mysql_schemadump; run; use auxiliary/admin/mysql/mysql_enum;  run; quit"
+  bruteforce:
+  - msfconsole -q -x "use auxiliary/scanner/mysql/mysql_schemadump; set RHOSTS %IP:%PORT; set USERNAME root; run; quit"
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 1 mysql://%IP:%PORT
+  - medusa -M mysql -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+NFS:
+  where: port = 2049 and protocol = 'tcp'
+  validations:
+  - nmap -Pn -n --script=nfs-ls,nfs-showmount,nfs-statfs -sV -p111,2049 %IP
+NNTP:
+  where: port = 119
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+NTP:
+  where: port = 123
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - nmap -sUV -pU:123 -Pn -n --script=ntp-monlist %IP
+  - nmap --script ntp-info -Pn -n -sUV -p123 %IP
+ORACLE:
+  where: port = 1521
+  validations:
+  - tnscmd10g version -h %IP
+  - tnscmd10g status -h %IP
+  - tnscmd10g -h %IP -cmdsize 256
+  - sidguess -i %IP -d /usr/share/metasploit-framework/data/wordlists/sid.txt
+  - msfconsole -q -x "use auxiliary/scanner/oracle/tnslsnr_version; setg RHOSTS %IP; run; use auxiliary/scanner/oracle/sid_brute; set BRUTEFORCE_SPEED=10; set SID_FILE=/usr/share/metasploit-framework/data/wordlists/sid.txt; run; quit"
+  bruteforce:
+  - hydra -v -C oracle_default_userpass.txt -t 20 oracle-listener://%IP:%PORT
+POP3:
+  where: port = 110
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+RCP:
+  where: port = 111
+  validations:
+  - nmap -d -Pn -n --script rpcinfo -p111 -sVS %IP
+REXEC:
+  where: port = 512
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 4 rexec://%IP:%PORT
+  - medusa -M rexec -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+RLOGIN:
+  where: port = 513
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 3 rlogin://%IP:%PORT
+  - medusa -M rlogin -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+RSH:
+  where: port = 514
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 2 rsh://%IP:%PORT
+  - medusa -M rsh -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+SMB:
+  where: port = 445
+  validations:
+  - enum4linux -a %IP
+  - nmap -Pn -n --script smb-vuln*.nse --script-args=unsafe=1 -p445 %IP
+  - nmap -Pn -n --script smb-security-mode -p445 %IP
+  - msfconsole -q -x "use auxiliary/scanner/smb/smb_version; set RHOSTS %IP; run; quit"
+  bruteforce:
+  - medusa -M smbnt -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+  # - hydra -L %USERLIST -P %PASSLIST smb://%IP:%PORT
+  # - hydra -v -m "WORKGROUP" -L %USERLIST -P %PASSLIST smb://%IP:%PORT
+SMTP:
+  where: port = 25
+  validations:
+  - msfconsole -q -x "use auxiliary/scanner/smtp/smtp_version; setg RHOSTS %IP; run; use auxiliary/scanner/smtp/smtp_relay; set EXTENDED true; set MAILTO crest@domain.com; run; quit"
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 5 smtp://%IP:%PORT
+  - medusa -M smtp -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+SNMP:
+  where: port = 61
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - nmap --disable-arp-ping -n -Pn -p161 -sVU --script snmp-brute  --script-args snmp-brute.communitiesdb=snmp_pass.txt %IP
+  - onesixtyone -c conf/communities.lst %IP
+SSH:
+  where: service like 'ssh'
+  validations:
+  - /pentest/7Safe/startv9/collect/bannergrab %IP 22
+  - nmap  -d -Pn -n --script ssh2-enum-algos -sSV -p22 %IP
+  - nmap  -d -Pn -n --script ssh-hostkey --script-args ssh_hostkey=full -sSV -p22 %IP
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 5 ssh://%IP:%PORT
+  - medusa -M ssh -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+SUBMISSION:
+  where: port = 587
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+TFTP:
+  where: service like 'tftp'
+  validations:
+  - sudo nmap -sUV -pU:%PORT -Pn -n --script=tftp-enum %IP  
+TELNET:
+  where: port = 23
+  validations:
+  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - msfconsole -q -x "use auxiliary/scanner/telnet/telnet_version; set RHOSTS %IP; set USERNAME root; run; quit"
+  bruteforce:
+  # - hydra -v -L %USERLIST -P %PASSLIST -t 5 telnet://%IP:%PORT
+  - medusa -M telnet -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+UPNP:
+  where: service like 'upnp-client'
+  validations:
+  - nmap -Pn -n --script upnp-info -sUV -p%PORT %IP
+  - nmap -Pn -n --script broadcast-upnp-info -sUV -p%PORT %IP
+VNC:
+  where: port = 5900
+  validations:
+  - msfconsole -q -x "use auxiliary/scanner/vnc/vnc_none_auth; set RHOSTS %IP; run; quit"
+  bruteforce:
+  # - hydra -P %PASSLIST -t 4 vnc://%IP:%PORT
+  - medusa -M vnc -U %USERLIST -P %PASSLIST -e ns -h %IP -n %PORT
+X11:
+  where: port = 6000
+  validations:
+  - msfconsole -q -x "use auxiliary/scanner/x11/open_x11; set RHOSTS %IP; run; quit"

@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+####################################################################################
+# Launcher - Automated scanner attempt to chain various tools
+# Written by: Steven van der Baan
+# Twitter: @vdbaan
+####################################################################################
+
+import sys
+import subprocess
+import argparse
+
+
+# pull in core
+from src.core import *
+
+def main(args):
+    print (baldrickName)
+    print (getQuote())
+    dbname = "baldrick-%s.db" % (current_milli_time())
+    args.dbname = dbname
+    try:
+        # Updating from GIT
+        print_status("Trying to update myself first ...")
+        subprocess.Popen("git pull", shell=True).wait()
+
+        checkRoot()
+
+        # pull in runner and run
+        import src.runner 
+        src.runner.do(args)
+
+    except KeyboardInterrupt:
+        print("\n")
+        print_status("Exiting Baldrick")
+        exit()
+        sys.exit()
+
+    except Exception as exp:
+        print_error("Whoops, here be errorz: " + str(exp))
+        import traceback
+        # print traceback.format_exc()
+    finally:
+        if os.path.isfile(dbname):
+            os.remove(dbname)    
+        print_status("I'm finished sir, is there anything else I could do?")
+        print
+        # pass  
+
+
+if __name__ == "__main__":
+    os.system('clear')
+    parser = MyParser()
+    parser.add_argument("-d", "--debug", action="store_true", default=False)
+    parser.add_argument('-n', '--nessus', nargs='+')
+    parser.add_argument('-m','--nmap', nargs='+')
+    parser.add_argument('-o','--openvas', nargs='+')
+    parser.add_argument('-v','--validate', action='store_true', default=False)
+    parser.add_argument('-b','--brute', action='store_true', default=False)
+    parser.add_argument('--uids')
+    parser.add_argument('--pwds')
+    parser.add_argument('-e','--exploit', action='store_true', default=False)
+    parser.add_argument('-c','--configuration', default='conf/validations.yml')
+
+    args = parser.parse_args()
+    if args.brute and not (args.uids and args.pwds):
+        parser.print_help()
+        exit()
+        sys.exit(1)
+    main(args)
