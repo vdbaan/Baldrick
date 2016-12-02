@@ -11,6 +11,7 @@ be run against the found port.
 
 ## Options
 The following options will be supported:
+```
   -h      --help          This screen
   -n FILE --nessus  FILE  The nessus report which is used as a based
   -m FILE --nmap    FILE  The XML nmap output 
@@ -20,4 +21,4 @@ The following options will be supported:
           --uid     FILE  The file containing credentials
           --pwd     FILE  The file containing passwords
   -e      --exploit       Run the exploit plugins
-  
+  ```
