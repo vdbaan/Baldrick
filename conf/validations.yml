@@ -20,14 +20,14 @@ HTTP:
   validations:
   - bannergrab %IP %PORT
   - nmap -Pn -n --script=http-vuln*.nse -sV -p%PORT %IP
-  - phantomjs conf/screenshot.js "http://%IP:%PORT/" %SAVEDIR/screenshot-%IP.%PORT.png
+  - phantomjs %BALDRICK/conf/screenshot.js "http://%IP:%PORT/" %SAVEDIR/screenshot-%IP.%PORT.png
   bruteforce:
   - nikto -host %IP -port %PORT
 HTTPS:
   where: service like 'https%'
   validations:
   - testssl --warnings false --wide %IP:%PORT
-  - phantomjs conf/screenshot.js --ignore-ssl-errors=true "https://%IP:%PORT/" %SAVEDIR/screenshot-ssl-%IP.%PORT.png
+  - phantomjs %BALDRICK/conf/screenshot.js --ignore-ssl-errors=true "https://%IP:%PORT/" %SAVEDIR/screenshot-ssl-%IP.%PORT.png
   bruteforce:
   - nikto -ssl -host %IP -port %PORT
 IKE:
@@ -136,7 +136,7 @@ SNMP:
   validations:
   - bannergrab %IP %PORT
   - nmap --disable-arp-ping -n -Pn -p161 -sVU --script snmp-brute  --script-args snmp-brute.communitiesdb=snmp_pass.txt %IP
-  - onesixtyone -c conf/communities.lst %IP
+  - onesixtyone -c %BALDRICK/conf/communities.lst %IP
 SSH:
   where: service like 'ssh'
   validations:

@@ -31,6 +31,7 @@ def prepare(result, args, row):
     result = testreplace(result, '%USERLIST',args.uids)
     result = testreplace(result, '%PASSLIST',args.pwds)
     result = testreplace(result, '%SAVEDIR',args.saveDir)
+    result = testreplace(result, '%BALDRICK',args.baldrick_dir)
     
     return result
 
