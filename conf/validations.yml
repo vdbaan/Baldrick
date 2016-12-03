@@ -5,11 +5,11 @@ DNS:
 FINGER:
   where: port = 79
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
 FTP:
   where: service like 'ftp%'
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - nmap  -d -Pn -n --script=ftp-anon -sSV -p21 %IP
   - msfconsole -q -x "use auxiliary/scanner/ftp/ftp_version;set RHOSTS %IP; run; quit"
   bruteforce:
@@ -18,7 +18,7 @@ FTP:
 HTTP:
   where: service like 'http%'
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - nmap -Pn -n --script=http-vuln*.nse -sV -p%PORT %IP
   - phantomjs conf/screenshot.js "http://%IP:%PORT/" %SAVEDIR/screenshot-%IP.%PORT.png
   bruteforce:
@@ -37,7 +37,7 @@ IKE:
 LDAP:
   where: port = 389
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   bruteforce:
   - hydra -v -L %USERLIST -P %PASSLIST -t 5 ldap2://%IP:%PORT
   - hydra -v -L %USERLIST -P %PASSLIST -t 10 ldap3://%IP:%PORT
@@ -52,7 +52,7 @@ MSRPC:
 MSSQL:
   where: port = 1433
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - nmap -Pn -n -p1433 --script ms-sql-info -sV %IP
   bruteforce:
   # - hydra -v -L %USERLIST -P %PASSLIST -t 4 %IP:%PORT mssql
@@ -60,7 +60,7 @@ MSSQL:
 MYSQL:
   where: port = 3306
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - msfconsole -q -x "use auxiliary/scanner/mysql/mysql_version; setg RHOSTS %IP; setg USERNAME root; run; use auxiliary/scanner/mysql/mysql_schemadump; run; use auxiliary/admin/mysql/mysql_enum;  run; quit"
   bruteforce:
   - msfconsole -q -x "use auxiliary/scanner/mysql/mysql_schemadump; set RHOSTS %IP:%PORT; set USERNAME root; run; quit"
@@ -73,11 +73,11 @@ NFS:
 NNTP:
   where: port = 119
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
 NTP:
   where: port = 123
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - nmap -sUV -pU:123 -Pn -n --script=ntp-monlist %IP
   - nmap --script ntp-info -Pn -n -sUV -p123 %IP
 ORACLE:
@@ -93,7 +93,7 @@ ORACLE:
 POP3:
   where: port = 110
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
 RCP:
   where: port = 111
   validations:
@@ -134,13 +134,13 @@ SMTP:
 SNMP:
   where: port = 61
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - nmap --disable-arp-ping -n -Pn -p161 -sVU --script snmp-brute  --script-args snmp-brute.communitiesdb=snmp_pass.txt %IP
   - onesixtyone -c conf/communities.lst %IP
 SSH:
   where: service like 'ssh'
   validations:
-  - /pentest/7Safe/startv9/collect/bannergrab %IP 22
+  - bannergrab %IP %PORT
   - nmap  -d -Pn -n --script ssh2-enum-algos -sSV -p22 %IP
   - nmap  -d -Pn -n --script ssh-hostkey --script-args ssh_hostkey=full -sSV -p22 %IP
   bruteforce:
@@ -149,7 +149,7 @@ SSH:
 SUBMISSION:
   where: port = 587
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
 TFTP:
   where: service like 'tftp'
   validations:
@@ -157,7 +157,7 @@ TFTP:
 TELNET:
   where: port = 23
   validations:
-  - /pentest/7Safe/bannergrab-3.5/bannergrab %IP %PORT
+  - bannergrab %IP %PORT
   - msfconsole -q -x "use auxiliary/scanner/telnet/telnet_version; set RHOSTS %IP; set USERNAME root; run; quit"
   bruteforce:
   # - hydra -v -L %USERLIST -P %PASSLIST -t 5 telnet://%IP:%PORT

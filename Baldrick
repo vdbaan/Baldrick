@@ -58,11 +58,16 @@ if __name__ == "__main__":
     parser.add_argument('--uids')
     parser.add_argument('--pwds')
     parser.add_argument('-e','--exploit', action='store_true', default=False)
-    parser.add_argument('-c','--configuration', default='conf/validations.yml')
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    parser.add_argument('-c','--configuration', default='%s/conf/validations.yml'%dir_path)
 
     args = parser.parse_args()
     if args.brute and not (args.uids and args.pwds):
         parser.print_help()
         exit()
         sys.exit(1)
+    if not args.validate and not args.brute and not args.exploit:
+        parser.print_help()
+        exit()
+        sys.exit(1) 
     main(args)
